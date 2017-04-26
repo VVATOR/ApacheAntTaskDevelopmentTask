@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     project     AntTaskDevelopmentTask
+     description  Ant Task Development Task                   
+     vikhliayeu                                                                
+     ====================================================================== -->
+<project name="project" default="AntTaskDevTask" basedir="." xmlns:lib="antlib:com.epam.training">
+	<description>
+		Ant Task Development Task
+    </description>
+	
+	<property name="timestamp.format" value="yyyy.MM.dd_HH-mm-ss" />
+	<property name="directory.lib-ext" value="lib-ext" />
+	<property name="directory.in" value="in" />
+	<property name="directory.temp" value="temp" />
+	<property name="ext.zip" value="*.zip" />
+	<property name="ext.xml" value="*.xml" />
+	<property name="ext.html" value="*.html" />
+	<property name="ext.xhtml" value="*.xhtml" />
+
+	<!-- ================================= 
+		        CUSTOM TASK USE 
+		         ================================= -->
+
+	<path id="lib-ext.classpath.AntTaskDevTask">
+		<fileset dir="${directory.lib-ext}" includes="**/*.jar" />
+	</path>
+
+	<!-- if jar with custom library not exist in $ANT_HOME/lib
+		 this instruction help load jar from folder  
+	-->
+	<taskdef 
+		uri="antlib:com.epam.training" 
+		resource="com/epam/training/antlib.xml" 
+		classpathref="lib-ext.classpath.AntTaskDevTask" 
+		loaderref="ant.coreLoader" />
+
+	<tstamp>
+		<format property="job.id" pattern="${timestamp.format}" />
+	</tstamp>
+
+	<target name="AntTaskDevTask" depends="clean, unpackZipWithoutStructure">
+		<lib:filesRenamer targetDir="${directory.temp}" postfix="${job.id}">
+			<fileSet dir="${directory.temp}">
+				<include name="*.*" />
+			</fileSet>
+		</lib:filesRenamer>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+	          target:  independend                     
+	         - - - - - - - - - - - - - - - - - -->
+	<target name="createFolders" depends="deleteFolders" description="create  folders structure">
+		<mkdir dir="${directory.in}" />
+		<mkdir dir="${directory.temp}" />
+		<echo>folders "${directory.in}" /  "${directory.temp}" is created</echo>
+	</target>
+	
+	<target name="deleteFolders" description="delete all folder">
+		<delete dir="${directory.in}" />
+		<delete dir="${directory.temp}" />
+		<echo>folders "${directory.in}" /  "${directory.temp}" is deleted</echo>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+	          target: depends                      
+	         - - - - - - - - - - - - - - - - - -->
+	<target name="copyFromInToTemp" description="copy files with zip, xml, html, xhtml extensions from in to temp folder">
+		<copy todir="${directory.temp}">
+			<fileset dir="${directory.in}">
+				<include name="${ext.zip}" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="unpackZipWithoutStructure" description="target for zip  unpack">
+		<unzip dest="${directory.temp}">
+			<flattenmapper />
+			<fileset dir="${directory.in}">
+				<include name="${ext.zip}" />
+			</fileset>
+			<patternset includes="**/${ext.xml} **/${ext.xhtml} **/${ext.html} **/${ext.png}" />
+		</unzip>
+	</target>
+
+	<target name="clean" description="clean temp folder">
+		<delete>
+			<fileset dir="${directory.temp}">
+				<include name="*" />
+			</fileset>
+		</delete>
+		<echo>${directory.temp} folder is clean </echo>
+	</target>
+</project>
